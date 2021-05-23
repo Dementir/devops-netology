@@ -18,3 +18,6 @@ crash.log
 И Все что лежит в папке `**/.terraform/*`
 
 byyyy
+
+
+BYYY from PYCHARM
