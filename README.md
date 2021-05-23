@@ -17,3 +17,4 @@ crash.log
 
 И Все что лежит в папке `**/.terraform/*`
 
+byyyy
