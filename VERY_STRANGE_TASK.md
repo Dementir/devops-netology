@@ -49,11 +49,12 @@ vagrant@ubuntu-bionic:/tmp$ ls
 new_path_directory  systemd-private-c91666cb524044dcb2d6d0e1560c3613-systemd-resolved.service-Ts6gx1
 vagrant@ubuntu-bionic:/tmp$ type -a bash
 bash is /bin/bash
-vagrant@ubuntu-bionic:/tmp$ export PATH=$PATH:/tmp/new_path_directory
-vagrant@ubuntu-bionic:/tmp$ type -a bash
-bash is /bin/bash
+vvagrant@ubuntu-bionic:~$ export PATH=/tmp/new_path_directory:$PATH
+vagrant@ubuntu-bionic:~$ type /bin/bash
+/bin/bash is /bin/bash
+vagrant@ubuntu-bionic:~$ type -a bash
 bash is /tmp/new_path_directory/bash
-vagrant@ubuntu-bionic:/tmp$ 
+bash is /bin/bash
 ```
 
 > Чем отличается планирование команд с помощью batch и at?
