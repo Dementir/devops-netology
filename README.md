@@ -1,22 +1,22 @@
 # devops-netology
 
-1. Найдите полный хеш и комментарий коммита, хеш которого начинается на aefea.
+1. Найдите полный хеш и комментарий коммита, хеш которого начинается на aefea.  
 command - `git log | grep aefea`
 
 aefead2207ef7e2aa5dc81a34aedf0cad4c32545
 
-2. Какому тегу соответствует коммит 85024d3?
+2. Какому тегу соответствует коммит 85024d3?  
 command - `git describe --exact-match 85024d3`
 
 v0.12.23
 
-3. Сколько родителей у коммита b8d720? Напишите их хеши.
+3. Сколько родителей у коммита b8d720? Напишите их хеши.  
 command - `git log --pretty=%P -n 1 "b8d720"`
 
 * `56cd7859e05c36c06b56d013b55a252d0bb7e158`
 * `9ea88f22fc6269854151c571162c5bcf958bee2b`
 
-4. Перечислите хеши и комментарии всех коммитов которые были сделаны между тегами v0.12.23 и v0.12.24.
+4. Перечислите хеши и комментарии всех коммитов которые были сделаны между тегами v0.12.23 и v0.12.24.  
 command - `git log --pretty=oneline v0.12.23...v0.12.24`
 
 ```
@@ -32,13 +32,14 @@ dd01a35078f040ca984cdd349f18d0b67e486c35 Update CHANGELOG.md
 225466bc3e5f35baa5d07197bbc079345b77525e Cleanup after v0.12.23 release
 ```
 
-5. Найдите коммит в котором была создана функция func providerSource, ее определение в коде выглядит так func providerSource(...) (вместо троеточего перечислены аргументы).
+5. Найдите коммит в котором была создана функция func providerSource, ее определение в коде выглядит так func providerSource(...) (вместо троеточего перечислены аргументы).  
 command - `git log -S "func providerSource" --oneline`
 
 8c928e835
 
-6. Найдите все коммиты в которых была изменена функция globalPluginDirs.
-command - ```
+6. Найдите все коммиты в которых была изменена функция globalPluginDirs.  
+command - 
+```
 git log -S "func globalPluginDirs" --oneline
 git show 8364383c3
 git log -L globalPluginDirs:plugins.go
@@ -51,7 +52,7 @@ git log -L globalPluginDirs:plugins.go
 * `66ebff90cdfaa6938f26f908c7ebad8d547fea17`
 * `8364383c359a6b738a436d1b7745ccdce178df47`
 
-7. Кто автор функции synchronizedWriters?
+7. Кто автор функции synchronizedWriters?  
 command - ```git log -S "func synchronizedWriters" --oneline
 git show 5ac311e2a```
 
