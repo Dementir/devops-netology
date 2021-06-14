@@ -1,0 +1,174 @@
+> 1) Какой системный вызов делает команда cd? В прошлом ДЗ мы выяснили, что cd не является самостоятельной программой, это shell builtin, поэтому запустить strace непосредственно на cd не получится. Тем не менее, вы можете запустить strace на /bin/bash -c 'cd /tmp'. В этом случае вы увидите полный список системных вызовов, которые делает сам bash при старте. Вам нужно найти тот единственный, который относится именно к cd.
+```
+rt_sigaction(SIGCHLD, {sa_handler=0x564e2eb3f790, sa_mask=[], sa_flags=SA_RESTORER|SA_RESTART, sa_restorer=0x7fe1d7e9b040}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=SA_RESTORER|SA_RESTART, sa_restorer=0x7fe1d7e9b040}, 8) = 0
+prlimit64(0, RLIMIT_NPROC, NULL, {rlim_cur=3838, rlim_max=3838}) = 0
+rt_sigprocmask(SIG_BLOCK, NULL, [], 8)  = 0
+rt_sigprocmask(SIG_BLOCK, NULL, [], 8)  = 0
+stat("/tmp", {st_mode=S_IFDIR|S_ISVTX|0777, st_size=4096, ...}) = 0
+chdir("/tmp")                           = 0
+rt_sigprocmask(SIG_BLOCK, [CHLD], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+exit_group(0)
+```
+
+> 2) Попробуйте использовать команду file на объекты разных типов на файловой системе. Например:
+```
+vagrant@netology1:~$ file /dev/tty
+/dev/tty: character special (5/0)
+vagrant@netology1:~$ file /dev/sda
+/dev/sda: block special (8/0)
+vagrant@netology1:~$ file /bin/bash
+/bin/bash: ELF 64-bit LSB shared object, x86-64
+```
+> Используя strace выясните, где находится база данных file на основании которой она делает свои догадки.
+
+Я думаю что это /usr/share/misc/magic.mgc
+
+> 3) Предположим, приложение пишет лог в текстовый файл. Этот файл оказался удален (deleted в lsof), однако возможности сигналом сказать приложению переоткрыть файлы или просто перезапустить приложение – нет. Так как приложение продолжает писать в удаленный файл, место на диске постепенно заканчивается. Основываясь на знаниях о перенаправлении потоков предложите способ обнуления открытого удаленного файла (чтобы освободить место на файловой системе).
+
+Мы можем найти куда пишет программа при помощи команды `cd /proc/<pid>/fd`
+
+Далее мы можем перенаправить поток создав новый файл и направив поток выводы из программы в этот файл.
+
+Так же если нам нужно сохранить данный, то мы можем данные удаленного файла скопировать в новый и удалить его из `/proc/<pid>/fd`
+
+
+> 4) Занимают ли зомби-процессы какие-то ресурсы в ОС (CPU, RAM, IO)?
+Зомби процессы не потребляют ресурсы ОС, но могут заблокировать таблицу процессов
+
+
+> 5) В iovisor BCC есть утилита opensnoop:
+```
+root@vagrant:~# dpkg -L bpfcc-tools | grep sbin/opensnoop
+/usr/sbin/opensnoop-bpfcc
+```
+> На какие файлы вы увидели вызовы группы open за первую секунду работы утилиты? Воспользуйтесь пакетом bpfcc-tools для Ubuntu 20.04. Дополнительные сведения по установке.
+```
+/etc/ld.so.cache
+/lib/x86_64-linux-gnu/libselinux.so.1
+/lib/x86_64-linux-gnu/libc.so.6
+lib/x86_64-linux-gnu/libpcre.so.3
+/lib/x86_64-linux-gnu/libdl.so.2
+/lib/x86_64-linux-gnu/libpthread.so.0
+/proc/filesystems
+/usr/lib/locale/locale-archive
+/usr/share/locale/locale.alias
+/usr/lib/locale/C.UTF-8/LC_IDENTIFICATION
+/usr/lib/x86_64-linux-gnu/gconv/gconv-modules.cache
+/usr/lib/locale/C.UTF-8/LC_MEASUREMENT
+/usr/lib/locale/C.UTF-8/LC_TELEPHONE
+...
+(куча файлов из /usr/lib/locale/C.UTF-8)
+...
+/etc/dpkg/dpkg.cfg.d
+/etc/dpkg/dpkg.cfg
+/home/vagrant/.dpkg.cfg
+...
+(куча файлов опять связанные с библиотеками)
+...
+/var/lib/dpkg/updates/
+/var/lib/dpkg/triggers/File
+/var/lib/dpkg/triggers/Unincorp
+/var/lib/dpkg/info/format
+/var/lib/dpkg/info/bpfcc-tools.list
+/var/lib/dpkg/diversions
+```
+
+> 6) Какой системный вызов использует uname -a? Приведите цитату из man по этому системному вызову, где описывается альтернативное местоположение в /proc, где можно узнать версию ядра и релиз ОС.
+Эта команда использует системный вызов `uname`  
+В man не описывается альтернативная местоположение в /proc
+```
+UNAME(1)                                                                      User Commands                                                                      UNAME(1)
+
+NAME
+       uname - print system information
+
+SYNOPSIS
+       uname [OPTION]...
+
+DESCRIPTION
+       Print certain system information.  With no OPTION, same as -s.
+
+       -a, --all
+              print all information, in the following order, except omit -p and -i if unknown:
+
+       -s, --kernel-name
+              print the kernel name
+
+       -n, --nodename
+              print the network node hostname
+
+       -r, --kernel-release
+              print the kernel release
+
+       -v, --kernel-version
+              print the kernel version
+
+       -m, --machine
+              print the machine hardware name
+
+       -p, --processor
+              print the processor type (non-portable)
+
+       -i, --hardware-platform
+              print the hardware platform (non-portable)
+
+       -o, --operating-system
+              print the operating system
+       --help display this help and exit
+
+       --version
+              output version information and exit
+
+AUTHOR
+       Written by David MacKenzie.
+
+REPORTING BUGS
+       GNU coreutils online help: <http://www.gnu.org/software/coreutils/>
+       Report uname translation bugs to <http://translationproject.org/team/>
+
+COPYRIGHT
+       Copyright © 2017 Free Software Foundation, Inc.  License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>.
+       This is free software: you are free to change and redistribute it.  There is NO WARRANTY, to the extent permitted by law.
+
+SEE ALSO
+       arch(1), uname(2)
+
+       Full documentation at: <http://www.gnu.org/software/coreutils/uname>
+       or available locally via: info '(coreutils) uname invocation'
+
+GNU coreutils 8.28                                                             January 2018                                                                      UNAME(1)
+```
+Но в исходниках системного вызова https://man7.org/linux/man-pages/man2/uname.2.html сказано, что это находится в /proc/sys/kernel/{ostype, hostname, osrelease, version, domainname}
+
+
+> 7) Чем отличается последовательность команд через ; и через && в bash? Например:
+```
+root@netology1:~# test -d /tmp/some_dir; echo Hi
+Hi
+root@netology1:~# test -d /tmp/some_dir && echo Hi
+root@netology1:~#
+```
+> Есть ли смысл использовать в bash &&, если применить set -e?
+Да имеет смысл, тк если еще добавить флаг -x мы сможем понять где и что пошло не так
+
+> 8) Из каких опций состоит режим bash set -euxo pipefail и почему его хорошо было бы использовать в сценариях?
+Потому что если какая-то команда завершится с ошибкой, мы сможем выйти немедленно из скрипта, залогировать какая команда была зафейлена, защитить переменные от перезаписи и вернуть код ошибки последней зафейленной команды.
+
+> 9) Используя -o stat для ps, определите, какой наиболее часто встречающийся статус у процессов в системе. В man ps ознакомьтесь (/PROCESS STATE CODES) что значат дополнительные к основной заглавной буквы статуса процессов. Его можно не учитывать при расчете (считать S, Ss или Ssl равнозначными).  
+```
+Ss
+R+
+```
+
+Значение доп флагов
+```
+<    процесс с высоким приоритетом
+N    процесс с низким приоритетом
+L    заблакированы страницы памяти
+s    лидирующий(главный) процесс в сессии
+l    многопоточный процесс
++    is in the foreground process group
+```
+
+Дополнительные флаги нельзя считать равнозначными.
